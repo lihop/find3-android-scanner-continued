@@ -211,7 +211,8 @@ public class MainActivity extends AppCompatActivity {
                     editor.putString("serverAddress", serverAddress);
                     editor.putString("locationName", locationName);
                     editor.putBoolean("allowGPS",allowGPS);
-                    editor.commit();
+                    // replaced commit() with apply(),
+                    editor.apply();
 
                     rssi_msg.setText("running");
                     // 24/7 alarm
