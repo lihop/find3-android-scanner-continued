@@ -266,7 +266,7 @@ public class ScanService extends Service {
         Log.d(TAG, "started discovery");
     }
 
-    // bluetooth reciever
+    // bluetooth receiver
     private class BluetoothBroadcastReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
