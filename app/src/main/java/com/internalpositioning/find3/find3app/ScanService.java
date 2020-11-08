@@ -108,7 +108,9 @@ public class ScanService extends Service {
         allowGPS = intent.getBooleanExtra("allowGPS", false);
 
         Log.d(TAG, "familyName: " + familyName);
-
+//the below code runs five (four visible to the user) scans, then stops itself
+        // TODO replace below behavior with "if user hasn't pressed stop scan, keep scanning"
+        // TODO add user-settable "scan delay" instead of hard-coded 10 second increments
         new java.util.Timer().schedule(
                 new java.util.TimerTask() {
                     @Override

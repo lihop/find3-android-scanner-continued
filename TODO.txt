@@ -1,0 +1,3 @@
+TODO add settings screen to configure various variables and settings (such as "scan interval")
+TODO report server connection status to user
+TODO be more informative to user when starting ScanService; currently just says "running," maybe replace with "setting things up" with activity indicator, like . (pause) .. (pause) ...
