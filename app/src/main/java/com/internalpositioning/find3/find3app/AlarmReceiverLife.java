@@ -29,11 +29,15 @@ public class AlarmReceiverLife extends BroadcastReceiver {
         boolean allowGPS = intent.getBooleanExtra("allowGPS",false);
         Log.d(TAG,"familyName: "+ familyName);
 
-        PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
-        wakeLock = pm.newWakeLock(PowerManager.FULL_WAKE_LOCK |
-                PowerManager.ACQUIRE_CAUSES_WAKEUP |
-                PowerManager.ON_AFTER_RELEASE, "WakeLock");
-        wakeLock.acquire();
+                //full wake lock deprecated in API level 17, replaced with partial wake lock
+                PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
+                wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "mainPartialWakeLockTag");
+                wakeLock.acquire();
+                //below is old full wake lock
+                ////pm.newWakeLock(PowerManager.FULL_WAKE_LOCK |
+                ////PowerManager.ACQUIRE_CAUSES_WAKEUP |
+                ////PowerManager.ON_AFTER_RELEASE, "WakeLock");
+                ////wakeLock.acquire();
         Intent scanService = new Intent(context, ScanService.class);
         scanService.putExtra("familyName",familyName);
         scanService.putExtra("deviceName",deviceName);
