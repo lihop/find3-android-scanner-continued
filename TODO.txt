@@ -1,3 +1,12 @@
 TODO add settings screen to configure various variables and settings (such as "scan interval")
+  may also be worthwhile to add some sort of "power usage estimate" to settings, so users understand
+  the impact to battery life their setting-adjustments can have.
+TODO settings - add "power usage estimate" to various settings
+  ideally this would give users some idea of what impact their current settings may have to battery life
+TODO settings - add "minimum battery life" setting
+  this setting would allow a user to set a minimum battery percentage required for background scanning,
+  and would set the battery percentage at which scanning will automatically stop.
 TODO report server connection status to user
+TODO inform user fingerprints made it to server ok
 TODO be more informative to user when starting ScanService; currently just says "running," maybe replace with "setting things up" with activity indicator, like . (pause) .. (pause) ...
+TODO rename package?

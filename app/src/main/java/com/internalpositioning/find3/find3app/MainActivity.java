@@ -62,7 +62,7 @@ public class MainActivity extends AppCompatActivity {
     WebSocketClient mWebSocketClient = null;
     Timer timer = null;
     private RemindTask oneSecondTimer = null;
-
+    // TODO Make autocomplete dependant on family's locations
     private String[] autocompleteLocations = new String[] {"bedroom","living room","kitchen","bathroom", "office"};
 
     @Override
@@ -163,6 +163,8 @@ public class MainActivity extends AppCompatActivity {
         toggleButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                // Create scanService intent
+                Intent scanService = new Intent(MainActivity.this, ScanService.class);
                 if (isChecked) {
                     TextView rssi_msg = (TextView) findViewById(R.id.textOutput);
                     String familyName = ((EditText) findViewById(R.id.familyName)).getText().toString().toLowerCase();
@@ -211,11 +213,11 @@ public class MainActivity extends AppCompatActivity {
                     editor.putString("serverAddress", serverAddress);
                     editor.putString("locationName", locationName);
                     editor.putBoolean("allowGPS",allowGPS);
-                    // replaced commit() with apply(),
                     editor.apply();
 
                     rssi_msg.setText("running");
                     // 24/7 alarm
+                    //TODO Clean this up - how much of below is necessary?
                     ll24 = new Intent(MainActivity.this, AlarmReceiverLife.class);
                     Log.d(TAG, "setting familyName to [" + familyName + "]");
                     ll24.putExtra("familyName", familyName);
@@ -224,6 +226,13 @@ public class MainActivity extends AppCompatActivity {
                     ll24.putExtra("locationName", locationName);
                     ll24.putExtra("allowGPS",allowGPS);
                     recurringLl24 = PendingIntent.getBroadcast(MainActivity.this, 0, ll24, PendingIntent.FLAG_CANCEL_CURRENT);
+                    scanService.putExtra("familyName",familyName);
+                    scanService.putExtra("deviceName",deviceName);
+                    scanService.putExtra("locationName",locationName);
+                    scanService.putExtra("serverAddress",serverAddress);
+                    scanService.putExtra("allowGPS",allowGPS);
+                    Log.d(TAG,"familyName: "+ familyName);
+                    startService(scanService);
                     alarms = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
                     alarms.setRepeating(AlarmManager.RTC_WAKEUP, SystemClock.currentThreadTimeMillis(), 60000, recurringLl24);
                     timer = new Timer();
@@ -255,6 +264,7 @@ public class MainActivity extends AppCompatActivity {
                     myClickableUrl.setText("See your results in realtime: " + serverAddress + "/view/location/" + familyName + "/" + deviceName);
                     Linkify.addLinks(myClickableUrl, Linkify.WEB_URLS);
                 } else {
+                    stopService(scanService);
                     TextView rssi_msg = (TextView) findViewById(R.id.textOutput);
                     rssi_msg.setText("not running");
                     Log.d(TAG, "toggle set to false");

@@ -108,79 +108,21 @@ public class ScanService extends Service {
         allowGPS = intent.getBooleanExtra("allowGPS", false);
 
         Log.d(TAG, "familyName: " + familyName);
-//the below code runs five (four visible to the user) scans, then stops itself
-        // TODO replace below behavior with "if user hasn't pressed stop scan, keep scanning"
-        // TODO add user-settable "scan delay" instead of hard-coded 10 second increments
-        new java.util.Timer().schedule(
-                new java.util.TimerTask() {
-                    @Override
-                    public void run() {
-                        synchronized (lock) {
-                            if (isScanning == false) {
-                                doScan();
-                            }
-                        }
-                    }
-                },
-                0
-        );
 
-
-        new java.util.Timer().schedule(
-                new java.util.TimerTask() {
-                    @Override
-                    public void run() {
-                        synchronized (lock) {
-                            if (isScanning == false) {
-                                doScan();
+            new java.util.Timer().scheduleAtFixedRate(
+                    new java.util.TimerTask(){
+                        @Override
+                        public void run() {
+                            synchronized (lock) {
+                                if (isScanning == false) {
+                                    doScan();
+                                }
                             }
                         }
-                    }
-                },
-                10000
-        );
-
-        new java.util.Timer().schedule(
-                new java.util.TimerTask() {
-                    @Override
-                    public void run() {
-                        synchronized (lock) {
-                            if (isScanning == false) {
-                                doScan();
-                            }
-                        }
-                    }
-                },
-                20000
-        );
-        new java.util.Timer().schedule(
-                new java.util.TimerTask() {
-                    @Override
-                    public void run() {
-                        synchronized (lock) {
-                            if (isScanning == false) {
-                                doScan();
-                            }
-                        }
-                    }
-                },
-                30000
-        );
-        new java.util.Timer().schedule(
-                new java.util.TimerTask() {
-                    @Override
-                    public void run() {
-                        synchronized (lock) {
-                            if (isScanning == false) {
-                                doScan();
-                            }
-                        }
-                        stopSelf(); // stop the service
-                    }
-                },
-                40000
-        );
-
+                    },
+                    // TODO add user-settable "scan delay," rather than forcing hard-coded values
+                    5000, 5000
+            );
         return START_STICKY;
     }
 
