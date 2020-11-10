@@ -221,33 +221,15 @@ public class MainActivity extends AppCompatActivity {
                     scanService.putExtra("serverAddress",serverAddress);
                     scanService.putExtra("allowGPS",allowGPS);
                     Log.d(TAG,"familyName: "+ familyName);
-                    startService(scanService);
+                    // Start scanService to begin scanning.
+                    // scanService is started as a ForegroundService so we can scan when the app is not in focus, and while phone is asleep.
+                    startForegroundService(scanService);
                     alarms = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-                    alarms.setRepeating(AlarmManager.RTC_WAKEUP, SystemClock.currentThreadTimeMillis(), 60000, recurringLl24);
+                    alarms.setRepeating(AlarmManager.RTC_WAKEUP, SystemClock.currentThreadTimeMillis(), 31000, recurringLl24);
                     timer = new Timer();
                     oneSecondTimer = new RemindTask();
                     timer.scheduleAtFixedRate(oneSecondTimer, 1000, 1000);
                     connectWebSocket();
-
-                    String scanningMessage = "Scanning for " + familyName + "/" + deviceName;
-                    if (locationName.equals("") == false) {
-                        scanningMessage += " at " + locationName;
-                    }
-                    NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(MainActivity.this)
-                            .setSmallIcon(R.drawable.ic_stat_name)
-                            .setContentTitle(scanningMessage)
-                            .setContentIntent(recurringLl24);
-                    //specifying an action and its category to be triggered once clicked on the notification
-                    Intent resultIntent = new Intent(MainActivity.this, MainActivity.class);
-                    resultIntent.setAction("android.intent.action.MAIN");
-                    resultIntent.addCategory("android.intent.category.LAUNCHER");
-                    PendingIntent resultPendingIntent = PendingIntent.getActivity(MainActivity.this, 0, resultIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-                    notificationBuilder.setContentIntent(resultPendingIntent);
-
-                    android.app.NotificationManager notificationManager =
-                            (android.app.NotificationManager) MainActivity.this.getSystemService(Context.NOTIFICATION_SERVICE);
-                    notificationManager.notify(0 /* ID of notification */, notificationBuilder.build());
-
 
                     final TextView myClickableUrl = (TextView) findViewById(R.id.textInstructions);
                     myClickableUrl.setText("See your results in realtime: " + serverAddress + "/view/location/" + familyName + "/" + deviceName);
@@ -258,8 +240,6 @@ public class MainActivity extends AppCompatActivity {
                     rssi_msg.setText("not running");
                     Log.d(TAG, "toggle set to false");
                     alarms.cancel(recurringLl24);
-                    android.app.NotificationManager mNotificationManager = (android.app.NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-                    mNotificationManager.cancel(0);
                     timer.cancel();
                 }
             }

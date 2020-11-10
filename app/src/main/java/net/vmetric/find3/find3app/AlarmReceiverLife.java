@@ -25,10 +25,10 @@ public class AlarmReceiverLife extends BroadcastReceiver {
         //  It may not be required to have wakelock here, if a wakelock is required at all. I'm too tired right now to think through it and test further.
         PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
         wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "FIND3:PartialWakeLockTag");
-        wakeLock.acquire();
-        Log.d(TAG,"Releasing wakelock");
-        if (wakeLock != null) wakeLock.release();
-        wakeLock = null;
+        wakeLock.acquire(30*1000L /*30 seconds * 1000 milliseconds per second*/); // TODO settings - add "max time scanning" option that corresponds to wakelock.acquire(timeout)
+        //Log.d(TAG,"Releasing wakelock");
+        //if (wakeLock != null) wakeLock.release();
+        //wakeLock = null;
     }
 
 

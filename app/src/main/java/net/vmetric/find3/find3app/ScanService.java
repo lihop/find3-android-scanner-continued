@@ -1,5 +1,9 @@
 package net.vmetric.find3.find3app;
 
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -13,6 +17,8 @@ import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
 import android.os.IBinder;
 import android.util.Log;
+
+import androidx.core.app.NotificationCompat;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.NetworkResponse;
@@ -96,6 +102,7 @@ public class ScanService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         super.onStartCommand(intent, flags, startId);
+
         deviceName = intent.getStringExtra("deviceName");
         familyName = intent.getStringExtra("familyName");
         locationName = intent.getStringExtra("locationName");
@@ -103,6 +110,9 @@ public class ScanService extends Service {
         allowGPS = intent.getBooleanExtra("allowGPS", false);
 
         Log.d(TAG, "familyName: " + familyName);
+
+        // Start itself in foreground
+        startForeground(1, makeNotification());
 
             new java.util.Timer().scheduleAtFixedRate(
                     new java.util.TimerTask(){
@@ -159,6 +169,33 @@ public class ScanService extends Service {
         super.onDestroy();
 
     }
+
+    private Notification makeNotification() {
+        String scanningMessage = "Scanning for " + familyName + "/" + deviceName; // What we want our notification to say (be titled)
+        String channelId = "scanServiceNotificationsChannelId"; // TODO research what channel id is for (reaching notification from elsewhere?)
+        String channelName = "scanServiceNotificationsChannelName"; // TODO research what channel name is for
+        NotificationChannel channel = new NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_DEFAULT); // TODO research notification channels (groups notifications of similar purposes, like multiple Imgur downloads?)
+
+        // If locationName is not empty, append it to scanningMessage
+        if (!locationName.equals("")) {
+            scanningMessage += " at " + locationName;
+        }
+
+        // I don't fully understand this line. Are we asking the Notification_Service to create our notification channel, with NotificationManager?
+        ((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE)).createNotificationChannel(channel);
+
+        // Create a new Notification (notification) by calling a new NotificationCompat.Builder.
+        Notification notification = new NotificationCompat.Builder(this, channelId)
+                .setSmallIcon(R.drawable.ic_stat_name) // Notification's icon
+                .setNotificationSilent() // Make notification silent // TODO setting - make this user-toggleable
+                .setContentTitle(scanningMessage).build(); // Set the notification title to scanningMessage and build the notification
+
+            return notification; // Return our freshly-built notification.
+    }
+//
+
+
+
 
     private final BroadcastReceiver mWifiScanReceiver = new BroadcastReceiver() {
         @Override
