@@ -8,10 +8,10 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.SystemClock;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
+import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v4.app.NotificationCompat;
+import androidx.core.app.NotificationCompat;
 import android.text.util.Linkify;
 import android.util.Log;
 import android.widget.ArrayAdapter;
@@ -201,6 +201,9 @@ public class MainActivity extends AppCompatActivity {
                     editor.putBoolean("allowGPS",allowGPS);
                     editor.apply();
 
+                    // TODO make "running" more descriptive to user,
+                    //  we need to inform user that the app is working and is not frozen/broken,
+                    //  while starting scanService/doing work
                     rssi_msg.setText("running");
                     // 24/7 alarm
                     //TODO Clean this up - how much of below is necessary?

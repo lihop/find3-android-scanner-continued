@@ -6,7 +6,4 @@ TODO settings - add "power usage estimate" to various settings
 TODO settings - add "minimum battery life" setting
   this setting would allow a user to set a minimum battery percentage required for background scanning,
   and would set the battery percentage at which scanning will automatically stop.
-TODO report server connection status to user
-TODO inform user fingerprints made it to server ok
-TODO be more informative to user when starting ScanService; currently just says "running," maybe replace with "setting things up" with activity indicator, like . (pause) .. (pause) ...
-TODO rename package?
+TODO report server connection status to user/if connection to server is lost/if connection quality to server degrades
