@@ -1,6 +1,5 @@
-package com.internalpositioning.find3.find3app;
+package net.vmetric.find3.find3app;
 
-import android.app.ActivityManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
