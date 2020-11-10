@@ -1,42 +1,28 @@
-package com.internalpositioning.find3.find3app;
+package net.vmetric.find3.find3app;
 
 import android.Manifest;
 import android.app.AlarmManager;
-import android.app.Notification;
-import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.location.Location;
-import android.location.LocationManager;
-import android.net.wifi.ScanResult;
-import android.net.wifi.WifiManager;
-import android.os.Build;
 import android.os.SystemClock;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
-import android.text.TextUtils;
 import android.text.util.Linkify;
 import android.util.Log;
-import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
-import android.widget.SimpleAdapter;
 import android.widget.TextView;
-import android.widget.Toast;
 import android.widget.ToggleButton;
+
+import net.vmetric.find3.find3app.R;
 
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
@@ -62,7 +48,7 @@ public class MainActivity extends AppCompatActivity {
     WebSocketClient mWebSocketClient = null;
     Timer timer = null;
     private RemindTask oneSecondTimer = null;
-
+    // TODO Make autocomplete dependant on family's locations
     private String[] autocompleteLocations = new String[] {"bedroom","living room","kitchen","bathroom", "office"};
 
     @Override
@@ -163,6 +149,8 @@ public class MainActivity extends AppCompatActivity {
         toggleButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                // Create scanService intent
+                Intent scanService = new Intent(MainActivity.this, ScanService.class);
                 if (isChecked) {
                     TextView rssi_msg = (TextView) findViewById(R.id.textOutput);
                     String familyName = ((EditText) findViewById(R.id.familyName)).getText().toString().toLowerCase();
@@ -211,10 +199,11 @@ public class MainActivity extends AppCompatActivity {
                     editor.putString("serverAddress", serverAddress);
                     editor.putString("locationName", locationName);
                     editor.putBoolean("allowGPS",allowGPS);
-                    editor.commit();
+                    editor.apply();
 
                     rssi_msg.setText("running");
                     // 24/7 alarm
+                    //TODO Clean this up - how much of below is necessary?
                     ll24 = new Intent(MainActivity.this, AlarmReceiverLife.class);
                     Log.d(TAG, "setting familyName to [" + familyName + "]");
                     ll24.putExtra("familyName", familyName);
@@ -223,6 +212,13 @@ public class MainActivity extends AppCompatActivity {
                     ll24.putExtra("locationName", locationName);
                     ll24.putExtra("allowGPS",allowGPS);
                     recurringLl24 = PendingIntent.getBroadcast(MainActivity.this, 0, ll24, PendingIntent.FLAG_CANCEL_CURRENT);
+                    scanService.putExtra("familyName",familyName);
+                    scanService.putExtra("deviceName",deviceName);
+                    scanService.putExtra("locationName",locationName);
+                    scanService.putExtra("serverAddress",serverAddress);
+                    scanService.putExtra("allowGPS",allowGPS);
+                    Log.d(TAG,"familyName: "+ familyName);
+                    startService(scanService);
                     alarms = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
                     alarms.setRepeating(AlarmManager.RTC_WAKEUP, SystemClock.currentThreadTimeMillis(), 60000, recurringLl24);
                     timer = new Timer();
@@ -254,6 +250,7 @@ public class MainActivity extends AppCompatActivity {
                     myClickableUrl.setText("See your results in realtime: " + serverAddress + "/view/location/" + familyName + "/" + deviceName);
                     Linkify.addLinks(myClickableUrl, Linkify.WEB_URLS);
                 } else {
+                    stopService(scanService);
                     TextView rssi_msg = (TextView) findViewById(R.id.textOutput);
                     rssi_msg.setText("not running");
                     Log.d(TAG, "toggle set to false");

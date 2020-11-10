@@ -1,8 +1,5 @@
-package com.internalpositioning.find3.find3app;
+package net.vmetric.find3.find3app;
 
-import android.app.Activity;
-import android.app.Notification;
-import android.app.PendingIntent;
 import android.app.Service;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -16,8 +13,6 @@ import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
 import android.os.IBinder;
 import android.util.Log;
-import android.widget.EditText;
-import android.widget.TextView;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.NetworkResponse;
@@ -109,76 +104,20 @@ public class ScanService extends Service {
 
         Log.d(TAG, "familyName: " + familyName);
 
-        new java.util.Timer().schedule(
-                new java.util.TimerTask() {
-                    @Override
-                    public void run() {
-                        synchronized (lock) {
-                            if (isScanning == false) {
-                                doScan();
+            new java.util.Timer().scheduleAtFixedRate(
+                    new java.util.TimerTask(){
+                        @Override
+                        public void run() {
+                            synchronized (lock) {
+                                if (isScanning == false) {
+                                    doScan();
+                                }
                             }
                         }
-                    }
-                },
-                0
-        );
-
-
-        new java.util.Timer().schedule(
-                new java.util.TimerTask() {
-                    @Override
-                    public void run() {
-                        synchronized (lock) {
-                            if (isScanning == false) {
-                                doScan();
-                            }
-                        }
-                    }
-                },
-                10000
-        );
-
-        new java.util.Timer().schedule(
-                new java.util.TimerTask() {
-                    @Override
-                    public void run() {
-                        synchronized (lock) {
-                            if (isScanning == false) {
-                                doScan();
-                            }
-                        }
-                    }
-                },
-                20000
-        );
-        new java.util.Timer().schedule(
-                new java.util.TimerTask() {
-                    @Override
-                    public void run() {
-                        synchronized (lock) {
-                            if (isScanning == false) {
-                                doScan();
-                            }
-                        }
-                    }
-                },
-                30000
-        );
-        new java.util.Timer().schedule(
-                new java.util.TimerTask() {
-                    @Override
-                    public void run() {
-                        synchronized (lock) {
-                            if (isScanning == false) {
-                                doScan();
-                            }
-                        }
-                        stopSelf(); // stop the service
-                    }
-                },
-                40000
-        );
-
+                    },
+                    // TODO add user-settable "scan delay," rather than forcing hard-coded values
+                    5000, 5000
+            );
         return START_STICKY;
     }
 
@@ -266,7 +205,7 @@ public class ScanService extends Service {
         Log.d(TAG, "started discovery");
     }
 
-    // bluetooth reciever
+    // bluetooth receiver
     private class BluetoothBroadcastReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
