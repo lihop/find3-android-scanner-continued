@@ -197,7 +197,7 @@ public class ScanService extends Service {
         bluetoothResults = new JSONObject();
         wifiResults = new JSONObject();
         BTAdapter.startDiscovery();
-        if (wifi.startScan()) {
+        if (wifi.startScan()) { // Until WiFiRTT (802.11mc) is widely supported, is there any alternative to startScan()?
             Log.d(TAG, "started wifi scan");
         } else {
             Log.w(TAG, "started wifi scan false?");

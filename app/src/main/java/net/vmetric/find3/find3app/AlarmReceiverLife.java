@@ -9,7 +9,7 @@ import android.util.Log;
 /**
  * Created by zacks on 3/2/2018.
  */
-
+// TODO is AlarmReceiverLife necessary anymore?
 public class AlarmReceiverLife extends BroadcastReceiver {
     private static PowerManager.WakeLock wakeLock;
     private static final String TAG = "AlarmReceiverLife";

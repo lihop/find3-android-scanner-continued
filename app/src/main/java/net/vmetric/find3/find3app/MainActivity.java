@@ -201,6 +201,9 @@ public class MainActivity extends AppCompatActivity {
                     editor.putBoolean("allowGPS",allowGPS);
                     editor.apply();
 
+                    // TODO make "running" more descriptive to user,
+                    //  we need to inform user that the app is working and is not frozen/broken,
+                    //  while starting scanService/doing work
                     rssi_msg.setText("running");
                     // 24/7 alarm
                     //TODO Clean this up - how much of below is necessary?
