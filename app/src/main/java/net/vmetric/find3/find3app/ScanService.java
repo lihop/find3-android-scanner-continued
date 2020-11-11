@@ -165,6 +165,7 @@ public class ScanService extends Service {
         } catch (Exception e) {
             Log.w(TAG, e.toString());
         }
+        stopForeground(true);
         stopSelf();
         super.onDestroy();
 
@@ -338,6 +339,7 @@ public class ScanService extends Service {
         LocationManager mLocationManager = (LocationManager)
                 getSystemService(Context.LOCATION_SERVICE);
 
+        // TODO fix this
         Location locationGPS = mLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
         Location locationNet = mLocationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
 

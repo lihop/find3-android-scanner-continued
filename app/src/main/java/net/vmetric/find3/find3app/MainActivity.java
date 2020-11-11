@@ -1,13 +1,20 @@
 package net.vmetric.find3.find3app;
 
 import android.Manifest;
+import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.SystemClock;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
+import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
@@ -31,7 +38,12 @@ import org.json.JSONObject;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
+import java.util.ListIterator;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -39,7 +51,6 @@ public class MainActivity extends AppCompatActivity {
 
     // logging
     private final String TAG = "MainActivity";
-
 
     // background manager
     private PendingIntent recurringLl24 = null;
@@ -94,23 +105,19 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // check permissions
-        int permissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
-        if (permissionCheck != PackageManager.PERMISSION_GRANTED) {
-            requestPermissions(new String[]{Manifest.permission.WAKE_LOCK, Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.INTERNET, Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.BLUETOOTH, Manifest.permission.BLUETOOTH_ADMIN, Manifest.permission.CHANGE_WIFI_STATE, Manifest.permission.ACCESS_WIFI_STATE}, 1);
+        if (!permissionHandler()) { // permission handler failed, API version isn't 28 or 29?
+            return;
         }
 
         TextView rssi_msg = (TextView) findViewById(R.id.textOutput);
         rssi_msg.setText("not running");
 
-
-        // check to see if there are preferences
+        // check to see if there are preferences // TODO what is this?
         SharedPreferences sharedPref = MainActivity.this.getPreferences(Context.MODE_PRIVATE);
         EditText familyNameEdit = (EditText) findViewById(R.id.familyName);
         familyNameEdit.setText(sharedPref.getString("familyName", ""));
@@ -121,12 +128,11 @@ public class MainActivity extends AppCompatActivity {
         CheckBox checkBoxAllowGPS = (CheckBox) findViewById(R.id.allowGPS);
         checkBoxAllowGPS.setChecked(sharedPref.getBoolean("allowGPS",false));
 
-
+        // TODO is this responsible for adding autocomplete suggestions to locationName?
         AutoCompleteTextView textView = (AutoCompleteTextView) findViewById(R.id.locationName);
         ArrayAdapter<String> adapter =
                 new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, autocompleteLocations);
         textView.setAdapter(adapter);
-
 
         ToggleButton toggleButtonTracking = (ToggleButton) findViewById(R.id.toggleScanType);
         toggleButtonTracking.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -159,7 +165,6 @@ public class MainActivity extends AppCompatActivity {
                         buttonView.toggle();
                         return;
                     }
-
                     String serverAddress = ((EditText) findViewById(R.id.serverAddress)).getText().toString().toLowerCase();
                     if (serverAddress.equals("")) {
                         rssi_msg.setText("server address cannot be empty");
@@ -180,7 +185,6 @@ public class MainActivity extends AppCompatActivity {
                     boolean allowGPS = ((CheckBox) findViewById(R.id.allowGPS)).isChecked();
                     Log.d(TAG,"allowGPS is checked: "+allowGPS);
                     String locationName = ((EditText) findViewById(R.id.locationName)).getText().toString().toLowerCase();
-
                     CompoundButton trackingButton = (CompoundButton) findViewById(R.id.toggleScanType);
                     if (trackingButton.isChecked() == false) {
                         locationName = "";
@@ -244,10 +248,63 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
-
-
     }
 
+    // Handles all permission-related shenanigans, such as checking if we have permissions, requesting permissions, etc.
+    // TODO optimize this/make it prettier.
+    private boolean permissionHandler() {
+        // SDK version of device
+        int SDKversion = Build.VERSION.SDK_INT;
+        // If we're running API 28 (Android 9), check for appropriate permissions.
+        if (SDKversion == 28) {
+            // Array containing each permission we need to check for. // TODO is there a way to automatically synchronize this and permissions listed in AndroidManifest.xml?
+            String[] api28permissions = new String[]{Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_WIFI_STATE, Manifest.permission.BLUETOOTH, Manifest.permission.BLUETOOTH_ADMIN, Manifest.permission.CHANGE_WIFI_STATE, Manifest.permission.FOREGROUND_SERVICE, Manifest.permission.INTERNET, Manifest.permission.WAKE_LOCK};
+            // ArrayList to hold denied permissions.
+            ArrayList<String> deniedPermissions = new ArrayList<>();
+
+            // For each permission in permissions array...
+            for (String permission : api28permissions) {
+                // ...if permission is denied...
+                if (ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_DENIED) {
+                    // ...add denied permission to deniedPermission.
+                    deniedPermissions.add(permission);
+                }
+            }
+
+            // If any permissions are denied...
+            if (!deniedPermissions.isEmpty()) {
+                // ...request all of our denied permissions...
+                ActivityCompat.requestPermissions(this, deniedPermissions.toArray(new String[0]), 1);
+                // ...and return true.
+            }
+            return true;
+
+        } else if (SDKversion == 29) { // Else, if we're running API 29 (Android 10), check for appropriate permissions.
+            // Array containing each permission we need to check for. // TODO is there a way to automatically synchronize this and permissions listed in AndroidManifest.xml?
+            String[] api29permissions = new String[]{Manifest.permission.ACCESS_BACKGROUND_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_WIFI_STATE, Manifest.permission.BLUETOOTH, Manifest.permission.BLUETOOTH_ADMIN, Manifest.permission.CHANGE_WIFI_STATE, Manifest.permission.FOREGROUND_SERVICE, Manifest.permission.INTERNET, Manifest.permission.WAKE_LOCK};
+            // ArrayList to hold denied permissions.
+            ArrayList<String> deniedPermissions = new ArrayList<>();
+
+            // For each permission in permissions array...
+            for (String permission : api29permissions) {
+                // ...if permission is denied...
+                if (ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_DENIED) {
+                    // ...add denied permission to deniedPermission.
+                    deniedPermissions.add(permission);
+                }
+            }
+
+            // If any permissions are denied...
+            if (!deniedPermissions.isEmpty()) {
+                // ...request all of our denied permissions...
+                ActivityCompat.requestPermissions(this, deniedPermissions.toArray(new String[0]), 1);
+                // ...and return true.
+            }
+            return true;
+        } else {
+            return false; // Android version != 28 || 29
+        }
+    }
 
     private void connectWebSocket() {
         URI uri;
