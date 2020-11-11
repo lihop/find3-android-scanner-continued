@@ -12,8 +12,8 @@ To get started with contributing to this app, use Android Studio 3+ and "Import 
 
 ## Roadmap
 
-- [x] Get locations for a family after it is typed in, and use those for autocompletion.
-- [x] Add settings screen to allow for various adjustments, such as time between each scan.
+- [ ] Get locations for a family after it is typed in, and use those for autocompletion.
+- [ ] Add settings screen to allow for various adjustments, such as time between each scan.
 
 ## Documentation
 
