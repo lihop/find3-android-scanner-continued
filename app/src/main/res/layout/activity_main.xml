@@ -155,7 +155,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:gravity="center"
-                    android:text="Submit GPS (may consume battery)"/>
+                    android:text="Submit GPS (may not work yet)"/>
             </LinearLayout>
 
             <LinearLayout
@@ -200,6 +200,7 @@
                     android:layout_height="wrap_content"
                     android:paddingLeft="24dp"
                     android:paddingRight="24dp"/>
+                
 
             </LinearLayout>
         </LinearLayout>

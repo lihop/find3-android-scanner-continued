@@ -42,7 +42,7 @@ import java.util.List;
  */
 
 public class ScanService extends Service {
-    // logging
+    // Logging
     private final String TAG = "ScanService";
 
     int mStartMode;       // indicates how to behave if the service is killed
@@ -52,14 +52,14 @@ public class ScanService extends Service {
     boolean isScanning = false;
     private final Object lock = new Object();
 
-    // wifi scanning
+    // Get a WifiManager, responsible for handling all things wifi (like scanning).
     private WifiManager wifi;
 
-    // bluetooth scanning
+    // Get the default Bluetooth adapter.
     private BluetoothAdapter BTAdapter = BluetoothAdapter.getDefaultAdapter();
-    BluetoothBroadcastReceiver receiver = null;
+    BluetoothBroadcastReceiver bluetoothBroadcastReceiver = null;
 
-    // post data request queue
+    // Post data request queue
     RequestQueue queue;
     private JSONObject jsonBody = new JSONObject();
     private JSONObject bluetoothResults = new JSONObject();
@@ -76,22 +76,26 @@ public class ScanService extends Service {
         // The service is being created
         Log.d(TAG, "creating new scan service");
         queue = Volley.newRequestQueue(this);
-        // setup wifi
+        // Setup wifi
         wifi = (WifiManager) this.getSystemService(Context.WIFI_SERVICE);
-        if (wifi.isWifiEnabled() == false) {
+        // If WiFi is not enabled...
+        if (!wifi.isWifiEnabled()) {
+            // ...enable it.
             wifi.setWifiEnabled(true);
         }
-        // register wifi intent filter
+        // Register wifi intent filter
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION);
         registerReceiver(mWifiScanReceiver, intentFilter);
 
         try {
-            // setup bluetooth
+            // Setup bluetooth
             Log.d(TAG, "setting up bluetooth");
-            if (receiver == null) {
-                receiver = new BluetoothBroadcastReceiver();
-                registerReceiver(receiver, new IntentFilter(BluetoothDevice.ACTION_FOUND));
+            // If the bluetooth receiver is null...
+            if (bluetoothBroadcastReceiver == null) {
+                // ...create a new one and apply a new IntentFilter to it.
+                bluetoothBroadcastReceiver = new BluetoothBroadcastReceiver();
+                registerReceiver(bluetoothBroadcastReceiver, new IntentFilter(BluetoothDevice.ACTION_FOUND));
             }
         } catch (Exception e) {
             Log.e(TAG, e.toString());
@@ -111,23 +115,26 @@ public class ScanService extends Service {
 
         Log.d(TAG, "familyName: " + familyName);
 
-        // Start itself in foreground
+        // Start ScanService (itself) in foreground,
+        // so we can continue scanning after the app leaves foreground.
         startForeground(1, makeNotification());
 
-            new java.util.Timer().scheduleAtFixedRate(
-                    new java.util.TimerTask(){
-                        @Override
-                        public void run() {
-                            synchronized (lock) {
-                                if (isScanning == false) {
-                                    doScan();
-                                }
+        // Wait one second, then scan every five seconds.
+        // TODO make this be done asynchronously?
+        new java.util.Timer().scheduleAtFixedRate(
+                new java.util.TimerTask(){
+                    @Override
+                    public void run() {
+                        synchronized (lock) {
+                            if (isScanning == false) {
+                                doScan();
                             }
                         }
-                    },
-                    // TODO add user-settable "scan delay," rather than forcing hard-coded values
-                    5000, 5000
-            );
+                    }
+                },
+                // TODO add user-settable "scan delay," rather than forcing hard-coded values
+                1000, 5000
+        );
         return START_STICKY;
     }
 
@@ -151,31 +158,43 @@ public class ScanService extends Service {
 
     @Override
     public void onDestroy() {
-        // The service is no longer used and is being destroyed
+        // The service is no longer needed and is being destroyed
         Log.v(TAG, "onDestroy");
         try {
-            if (receiver != null)
-                unregisterReceiver(receiver);
+            // If the bluetoothBroadcastReceiver is not null, then we can unregister it.
+            if (bluetoothBroadcastReceiver != null)
+                unregisterReceiver(bluetoothBroadcastReceiver);
         } catch (Exception e) {
             Log.w(TAG, e.toString());
         }
         try {
+            // If the wifi scan receiver is not null, we can unregister it.
             if (mWifiScanReceiver != null)
                 unregisterReceiver(mWifiScanReceiver);
         } catch (Exception e) {
             Log.w(TAG, e.toString());
         }
+        // Stop itself running in foreground, and remove out notification.
         stopForeground(true);
+
+        // Just in case stopForeground wasn't enough, literally stop itself.
         stopSelf();
         super.onDestroy();
-
     }
 
+    // This method is responsible for creating the notification that runs when we're scanning.
+    // TODO tapping the notification currently does nothing; make it open app on tap
     private Notification makeNotification() {
         String scanningMessage = "Scanning for " + familyName + "/" + deviceName; // What we want our notification to say (be titled)
         String channelId = "scanServiceNotificationsChannelId"; // TODO research what channel id is for (reaching notification from elsewhere?)
         String channelName = "scanServiceNotificationsChannelName"; // TODO research what channel name is for
         NotificationChannel channel = new NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_DEFAULT); // TODO research notification channels (groups notifications of similar purposes, like multiple Imgur downloads?)
+
+        // Build our intent responsible for opening the app when notification is tapped.
+        Intent resultIntent = new Intent(getApplicationContext(), MainActivity.class);
+        resultIntent.setAction("android.intent.action.MAIN");
+        resultIntent.addCategory("android.intent.category.LAUNCHER");
+        PendingIntent resultPendingIntent = PendingIntent.getActivity(getApplicationContext(), 0, resultIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         // If locationName is not empty, append it to scanningMessage
         if (!locationName.equals("")) {
@@ -185,23 +204,18 @@ public class ScanService extends Service {
         // I don't fully understand this line. Are we asking the Notification_Service to create our notification channel, with NotificationManager?
         ((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE)).createNotificationChannel(channel);
 
-        // Create a new Notification (notification) by calling a new NotificationCompat.Builder.
-        Notification notification = new NotificationCompat.Builder(this, channelId)
+        // Return a new, hot&ready pizza - I mean Notification by calling a new NotificationCompat.Builder.
+        return new NotificationCompat.Builder(this, channelId)
                 .setSmallIcon(R.drawable.ic_stat_name) // Notification's icon
                 .setNotificationSilent() // Make notification silent // TODO setting - make this user-toggleable
-                .setContentTitle(scanningMessage).build(); // Set the notification title to scanningMessage and build the notification
-
-            return notification; // Return our freshly-built notification.
+                .setContentIntent(resultPendingIntent) // Sets the intent to fire when tapping the notification(?)
+                .setContentTitle(scanningMessage).build(); // Build our notification.
     }
-//
-
-
-
 
     private final BroadcastReceiver mWifiScanReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context c, Intent intent) {
-            // This condition is not necessary if you listen to only one action
+            // This condition is not necessary if you listen to only one action // TODO what does this mean?
             if (intent.getAction().equals(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION)) {
                 Log.d(TAG, "timer off, trying to send data");
                 List<ScanResult> wifiScanList = wifi.getScanResults();
@@ -227,7 +241,7 @@ public class ScanService extends Service {
 
     private void doScan() {
         synchronized (lock) {
-            if (isScanning == true) {
+            if (isScanning) {
                 return;
             }
             isScanning = true;
@@ -243,7 +257,7 @@ public class ScanService extends Service {
         Log.d(TAG, "started discovery");
     }
 
-    // bluetooth receiver
+    // Bluetooth receiver
     private class BluetoothBroadcastReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -251,12 +265,14 @@ public class ScanService extends Service {
             if (BluetoothDevice.ACTION_FOUND.equals(action)) {
                 int rssi = intent.getShortExtra(BluetoothDevice.EXTRA_RSSI, Short.MIN_VALUE);
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                String name = device.getAddress().toLowerCase();
-                Log.v(TAG, "bluetooth: " + name + " => " + rssi + "dBm");
-                try {
-                    bluetoothResults.put(name, rssi);
-                } catch (Exception e) {
-                    Log.e(TAG, e.toString());
+                if (device != null) {
+                    String name = device.getAddress().toLowerCase();
+                    try {
+                        bluetoothResults.put(name, rssi);
+                    } catch (Exception e) {
+                        Log.e(TAG, e.toString());
+                    }
+                    Log.v(TAG, "bluetooth: " + name + " => " + rssi + "dBm");
                 }
             }
         }
@@ -322,6 +338,7 @@ public class ScanService extends Service {
                     if (response != null) {
                         responseString = new String(response.data);
                     }
+                    assert response != null;
                     return Response.success(responseString, HttpHeaderParser.parseCacheHeaders(response));
                 }
             };
