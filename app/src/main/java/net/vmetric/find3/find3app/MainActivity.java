@@ -115,8 +115,9 @@ public class MainActivity extends AppCompatActivity {
         }
 
         TextView rssi_msg = (TextView) findViewById(R.id.textOutput);
-        rssi_msg.setText("not running");
-
+        rssi_msg.setText("Scanning info will appear here.");
+        TextView mainOutput = (TextView) findViewById(R.id.textOutput2);
+        mainOutput.setText("Process info will appear here."); // TODO use this.
         // check to see if there are preferences // TODO what is this?
         SharedPreferences sharedPref = MainActivity.this.getPreferences(Context.MODE_PRIVATE);
         EditText familyNameEdit = (EditText) findViewById(R.id.familyName);
