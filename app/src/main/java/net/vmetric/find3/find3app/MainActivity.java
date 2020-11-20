@@ -4,8 +4,10 @@ import android.Manifest;
 import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Build;
@@ -19,6 +21,8 @@ import androidx.core.content.ContextCompat;
 import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import androidx.core.app.NotificationCompat;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+
 import android.text.util.Linkify;
 import android.util.Log;
 import android.widget.ArrayAdapter;
@@ -114,10 +118,12 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
+        LocalBroadcastManager.getInstance(this).registerReceiver(serviceInfoUpdateReceiver, new IntentFilter("serviceInfoUpdate"));
+
         TextView rssi_msg = (TextView) findViewById(R.id.textOutput);
         rssi_msg.setText("Scanning info will appear here.");
         TextView mainOutput = (TextView) findViewById(R.id.textOutput2);
-        mainOutput.setText("Process info will appear here."); // TODO use this.
+        mainOutput.setText("Service info will appear here."); // TODO use this.
         // check to see if there are preferences // TODO what is this?
         SharedPreferences sharedPref = MainActivity.this.getPreferences(Context.MODE_PRIVATE);
         EditText familyNameEdit = (EditText) findViewById(R.id.familyName);
@@ -425,7 +431,17 @@ public class MainActivity extends AppCompatActivity {
         mWebSocketClient.connect();
     }
 
-
+    private BroadcastReceiver serviceInfoUpdateReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            // Get textview
+            TextView serviceInfo = (TextView) findViewById(R.id.textOutput2);
+            // Get update from the Intent
+            String message = intent.getStringExtra("update");
+            // Update textview
+            serviceInfo.setText(message);
+        }
+    };
 
 
 }

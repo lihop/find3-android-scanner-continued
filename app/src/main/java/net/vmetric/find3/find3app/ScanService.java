@@ -19,6 +19,7 @@ import android.os.IBinder;
 import android.util.Log;
 
 import androidx.core.app.NotificationCompat;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.NetworkResponse;
@@ -179,6 +180,8 @@ public class ScanService extends Service {
 
         // Just in case stopForeground wasn't enough, literally stop itself.
         stopSelf();
+
+        sendServiceInfoUpdate("Scan service stopped.");
         super.onDestroy();
     }
 
@@ -212,12 +215,22 @@ public class ScanService extends Service {
                 .setContentTitle(scanningMessage).build(); // Build our notification.
     }
 
+    private void sendServiceInfoUpdate(String update) {
+        if (update != null) {
+            Intent intent = new Intent("serviceInfoUpdate");
+            intent.putExtra("update", update);
+            // TODO replace with LiveData?
+            LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+        }
+    }
+
     private final BroadcastReceiver mWifiScanReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context c, Intent intent) {
             // This condition is not necessary if you listen to only one action // TODO what does this mean?
             if (intent.getAction().equals(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION)) {
                 Log.d(TAG, "timer off, trying to send data");
+                sendServiceInfoUpdate("Scan results available, attempting to send to server.");
                 List<ScanResult> wifiScanList = wifi.getScanResults();
                 for (int i = 0; i < wifiScanList.size(); i++) {
                     String name = wifiScanList.get(i).BSSID.toLowerCase();
@@ -250,9 +263,11 @@ public class ScanService extends Service {
         wifiResults = new JSONObject();
         BTAdapter.startDiscovery();
         if (wifi.startScan()) { // Until WiFiRTT (802.11mc) is widely supported, is there any alternative to startScan()?
-            Log.d(TAG, "started wifi scan");
+            sendServiceInfoUpdate("Started WiFi scan");
+            //Log.d(TAG, "started wifi scan"); TODO delete this
         } else {
-            Log.w(TAG, "started wifi scan false?");
+            sendServiceInfoUpdate("Started WiFi scan false?");
+            //Log.w(TAG, "started wifi scan false?"); TODO delete this
         }
         Log.d(TAG, "started discovery");
     }
