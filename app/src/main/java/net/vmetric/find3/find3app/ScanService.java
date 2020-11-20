@@ -40,6 +40,8 @@ import org.json.JSONObject;
 
 import java.io.UnsupportedEncodingException;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * Created by zacks on 3/2/2018.
@@ -52,8 +54,10 @@ public class ScanService extends Service {
     int mStartMode;       // indicates how to behave if the service is killed
     IBinder mBinder;      // interface for clients that bind
     boolean mAllowRebind; // indicates whether onRebind should be used
+    Timer scanTimer; // Timer used for scanning.
 
     boolean isScanning = false;
+    boolean scanTimerIsRunning = false;
     private final Object lock = new Object();
 
     // Get a WifiManager, responsible for handling all things wifi (like scanning).
@@ -122,23 +126,25 @@ public class ScanService extends Service {
         // Start ScanService (itself) in foreground,
         // so we can continue scanning after the app leaves foreground.
         startForeground(1, makeNotification());
-
         // Wait one second, then scan every five seconds.
+        // Scan Timer
         // TODO make this be done asynchronously?
-        new java.util.Timer().scheduleAtFixedRate(
-                new java.util.TimerTask() {
-                    @Override
-                    public void run() {
-                        synchronized (lock) {
-                            if (isScanning == false) {
-                                doScan();
-                            }
-                        }
+
+        scanTimer = new Timer();
+        TimerTask scanTimerTask = new TimerTask() {
+            @Override
+            public void run() {
+                scanTimerIsRunning = true;
+                synchronized (lock) {
+                    if (isScanning == false) {
+                        doScan();
                     }
-                },
-                // TODO add user-settable "scan delay," rather than forcing hard-coded values
-                1000, 5000
-        );
+                }
+            }
+        };
+
+        scanTimer.scheduleAtFixedRate(scanTimerTask, 1000, 5000); // TODO add user-settable "scan delay," rather than forcing hard-coded values
+
         return START_STICKY;
     }
 
@@ -164,6 +170,9 @@ public class ScanService extends Service {
     public void onDestroy() {
         // The service is no longer needed and is being destroyed
         Log.v(TAG, "onDestroy");
+        // Stop the scan timer, i.e., stop scanning.
+        stopScanTimer();
+
         try {
             // If the bluetoothBroadcastReceiver is not null, then we can unregister it.
             if (bluetoothBroadcastReceiver != null)
@@ -189,6 +198,17 @@ public class ScanService extends Service {
         sendServiceInfoUpdate("Scan service stopped.");
     }
 
+    // This method is responsible for stopping the Scan Timer.
+    private void stopScanTimer() {
+        // Check if scan timer is currently running; we can't stop what isn't running.
+        if (scanTimer != null && scanTimerIsRunning) {
+            scanTimer.cancel();
+            scanTimer.purge();
+            scanTimer = null;
+            scanTimerIsRunning = false;
+        }
+
+    }
     // This method is responsible for creating the notification that runs when we're scanning.
     // TODO tapping the notification currently does nothing; make it open app on tap
     private Notification makeNotification() {
@@ -233,7 +253,7 @@ public class ScanService extends Service {
         public void onReceive(Context c, Intent intent) {
             // This condition is not necessary if you listen to only one action // TODO what does this mean?
             if (intent.getAction().equals(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION)) {
-                Log.d(TAG, "timer off, trying to send data");
+                //Log.d(TAG, "timer off, trying to send data");
                 sendServiceInfoUpdate("Scan results available, attempting to send to server.");
                 List<ScanResult> wifiScanList = wifi.getScanResults();
                 for (int i = 0; i < wifiScanList.size(); i++) {
