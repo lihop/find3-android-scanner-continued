@@ -1,5 +1,6 @@
 package net.vmetric.find3.find3app;
 
+import android.Manifest;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -11,6 +12,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationManager;
 import android.net.wifi.ScanResult;
@@ -18,6 +20,7 @@ import android.net.wifi.WifiManager;
 import android.os.IBinder;
 import android.util.Log;
 
+import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
@@ -123,7 +126,7 @@ public class ScanService extends Service {
         // Wait one second, then scan every five seconds.
         // TODO make this be done asynchronously?
         new java.util.Timer().scheduleAtFixedRate(
-                new java.util.TimerTask(){
+                new java.util.TimerTask() {
                     @Override
                     public void run() {
                         synchronized (lock) {
@@ -181,8 +184,9 @@ public class ScanService extends Service {
         // Just in case stopForeground wasn't enough, literally stop itself.
         stopSelf();
 
-        sendServiceInfoUpdate("Scan service stopped.");
         super.onDestroy();
+
+        sendServiceInfoUpdate("Scan service stopped.");
     }
 
     // This method is responsible for creating the notification that runs when we're scanning.
@@ -263,7 +267,7 @@ public class ScanService extends Service {
         wifiResults = new JSONObject();
         BTAdapter.startDiscovery();
         if (wifi.startScan()) { // Until WiFiRTT (802.11mc) is widely supported, is there any alternative to startScan()?
-            sendServiceInfoUpdate("Started WiFi scan");
+            sendServiceInfoUpdate("Started WiFi scan"); // TODO after tapping "stop scan" once data has been sent to server, this line will be called. It shouldn't be called. Why is it getting called?
             //Log.d(TAG, "started wifi scan"); TODO delete this
         } else {
             sendServiceInfoUpdate("Started WiFi scan false?");
@@ -293,11 +297,10 @@ public class ScanService extends Service {
         }
     }
 
-    ;
-
 
     public void sendData() {
         try {
+            sendServiceInfoUpdate("Compiling data...");
             String URL = serverAddress + "/data";
             jsonBody.put("f", familyName);
             jsonBody.put("d", deviceName);
@@ -311,10 +314,10 @@ public class ScanService extends Service {
                 JSONObject gps = new JSONObject();
                 Location loc = getLastBestLocation();
                 if (loc != null) {
-                    gps.put("lat",loc.getLatitude());
-                    gps.put("lon",loc.getLongitude());
-                    gps.put("alt",loc.getAltitude());
-                    jsonBody.put("gps",gps);
+                    gps.put("lat", loc.getLatitude());
+                    gps.put("lon", loc.getLongitude());
+                    gps.put("alt", loc.getAltitude());
+                    jsonBody.put("gps", gps);
                 }
             }
 
@@ -342,6 +345,7 @@ public class ScanService extends Service {
                     try {
                         return mRequestBody == null ? null : mRequestBody.getBytes("utf-8");
                     } catch (UnsupportedEncodingException uee) {
+                        sendServiceInfoUpdate("Unsupported Encoding: ScanService.java line 348");
                         VolleyLog.wtf("Unsupported Encoding while trying to get the bytes of %s using %s", mRequestBody, "utf-8");
                         return null;
                     }
@@ -358,7 +362,9 @@ public class ScanService extends Service {
                 }
             };
 
+            sendServiceInfoUpdate("Sending data...");
             queue.add(stringRequest);
+            sendServiceInfoUpdate("Data sent to server!");
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -368,13 +374,20 @@ public class ScanService extends Service {
      * @return the last know best location
      */
     private Location getLastBestLocation() {
+        sendServiceInfoUpdate("Getting GPS data");
         LocationManager mLocationManager = (LocationManager)
                 getSystemService(Context.LOCATION_SERVICE);
+        // If we do not have permissions...
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO maybe add permission request? Though that seems like MainActivity's job.
 
-        // TODO fix this
+            // ...return null.
+            return null;
+        }
         Location locationGPS = mLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
         Location locationNet = mLocationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
 
+        sendServiceInfoUpdate("Done getting GPS data");
 
         long GPSLocationTime = 0;
         if (null != locationGPS) {
@@ -394,5 +407,6 @@ public class ScanService extends Service {
             Log.d("GPS",locationNet.toString());
             return locationNet;
         }
+
     }
 }
