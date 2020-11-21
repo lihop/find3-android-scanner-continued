@@ -14,6 +14,7 @@ To get started with contributing to this app, use Android Studio 3+ and "Import 
 
 - [ ] Get locations for a family after it is typed in, and use those for autocompletion.
 - [ ] Add settings screen to allow for various adjustments, such as time between each scan.
+- [ ] Allow viewing the server's location guess for your device in real-time, in-app.
 
 ## Documentation
 
