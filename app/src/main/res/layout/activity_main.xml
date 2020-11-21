@@ -42,7 +42,8 @@
                 android:paddingRight="24dp"
                 android:paddingBottom="16dp"
                 android:text="Instructions: Enter your family name, device and then press 'Scan' and wait."
-                android:textAlignment="center"/>
+                android:textAlignment="center"
+                android:textColor="@android:color/primary_text_light" />
 
             <LinearLayout
                 android:id="@+id/relLayout6"
@@ -53,10 +54,11 @@
 
                 <TextView
                     android:id="@+id/familyLabel"
-                    android:labelFor="@+id/familyName"
                     android:layout_width="80dp"
                     android:layout_height="wrap_content"
-                    android:text="Family:"/>
+                    android:labelFor="@+id/familyName"
+                    android:text="Family:"
+                    android:textColor="@android:color/primary_text_light" />
 
                 <EditText
                     android:id="@+id/familyName"
@@ -66,8 +68,10 @@
                     android:ems="10"
                     android:gravity="center"
                     android:hint="e.g. myfamily"
+                    android:textColorHint="@android:color/tertiary_text_light"
                     android:inputType="textPersonName"
-                    android:paddingTop="-10dp"/>
+                    android:paddingTop="-10dp"
+                    android:textColor="@android:color/primary_text_light" />
             </LinearLayout>
 
             <LinearLayout
@@ -79,10 +83,11 @@
 
                 <TextView
                     android:id="@+id/deviceLabel"
-                    android:labelFor="@+id/deviceName"
                     android:layout_width="80dp"
                     android:layout_height="wrap_content"
-                    android:text="Device:"/>
+                    android:labelFor="@+id/deviceName"
+                    android:text="Device:"
+                    android:textColor="@android:color/primary_text_light" />
 
                 <EditText
                     android:id="@+id/deviceName"
@@ -92,7 +97,9 @@
                     android:ems="10"
                     android:gravity="center"
                     android:hint="e.g., myphone"
-                    android:inputType="textUri|textPersonName"/>
+                    android:textColorHint="@android:color/tertiary_text_light"
+                    android:inputType="textUri|textPersonName"
+                    android:textColor="@android:color/primary_text_light" />
             </LinearLayout>
 
             <LinearLayout
@@ -104,10 +111,11 @@
 
                 <TextView
                     android:id="@+id/serverLabel"
-                    android:labelFor="@+id/serverAddress"
                     android:layout_width="80dp"
                     android:layout_height="wrap_content"
-                    android:text="Server:"/>
+                    android:labelFor="@+id/serverAddress"
+                    android:text="Server:"
+                    android:textColor="@android:color/primary_text_light" />
 
                 <EditText
                     android:id="@+id/serverAddress"
@@ -117,8 +125,10 @@
                     android:ems="10"
                     android:gravity="center"
                     android:hint="e.g., https://cloud.internalpositioning.com"
+                    android:textColorHint="@android:color/tertiary_text_light"
                     android:inputType="textUri|textPersonName"
-                    android:textSize="14sp"/>
+                    android:textColor="@android:color/primary_text_light"
+                    android:textSize="14sp" />
 
             </LinearLayout>
 
@@ -131,10 +141,11 @@
 
                 <TextView
                     android:id="@+id/locationLabel"
-                    android:labelFor="@+id/locationName"
                     android:layout_width="80dp"
                     android:layout_height="wrap_content"
-                    android:text="Location (optional):"/>
+                    android:labelFor="@+id/locationName"
+                    android:text="Location (optional):"
+                    android:textColor="@android:color/primary_text_light" />
 
                 <AutoCompleteTextView
                     android:id="@+id/locationName"
@@ -143,7 +154,9 @@
                     android:ems="10"
                     android:gravity="center"
                     android:hint="e.g., kitchen"
-                    android:inputType="textUri|textPersonName"/>
+                    android:textColorHint="@android:color/tertiary_text_light"
+                    android:inputType="textUri|textPersonName"
+                    android:textColor="@android:color/primary_text_light" />
             </LinearLayout>
 
             <LinearLayout
@@ -203,7 +216,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:paddingLeft="24dp"
-                    android:paddingRight="24dp"/>
+                    android:paddingRight="24dp"
+                    android:textColor="@android:color/primary_text_light" />
 
                 <View
                     android:id="@+id/divider"
@@ -218,7 +232,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:paddingLeft="24dp"
-                    android:paddingRight="24dp"/>
+                    android:paddingRight="24dp"
+                    android:textColor="@android:color/primary_text_light" />
 
             </LinearLayout>
         </LinearLayout>
