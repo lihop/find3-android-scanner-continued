@@ -61,7 +61,7 @@
                 <EditText
                     android:id="@+id/familyName"
                     android:layout_width="220dp"
-                    android:layout_height="wrap_content"
+                    android:layout_height="50dp"
                     android:autofillHints="familyName"
                     android:ems="10"
                     android:gravity="center"
@@ -87,7 +87,7 @@
                 <EditText
                     android:id="@+id/deviceName"
                     android:layout_width="220dp"
-                    android:layout_height="wrap_content"
+                    android:layout_height="50dp"
                     android:autofillHints="deviceName"
                     android:ems="10"
                     android:gravity="center"
@@ -112,7 +112,7 @@
                 <EditText
                     android:id="@+id/serverAddress"
                     android:layout_width="220dp"
-                    android:layout_height="wrap_content"
+                    android:layout_height="50dp"
                     android:autofillHints="serverAddress"
                     android:ems="10"
                     android:gravity="center"
@@ -139,7 +139,7 @@
                 <AutoCompleteTextView
                     android:id="@+id/locationName"
                     android:layout_width="220dp"
-                    android:layout_height="wrap_content"
+                    android:layout_height="50dp"
                     android:ems="10"
                     android:gravity="center"
                     android:hint="e.g., kitchen"
