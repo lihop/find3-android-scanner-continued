@@ -53,6 +53,7 @@
 
                 <TextView
                     android:id="@+id/familyLabel"
+                    android:labelFor="@+id/familyName"
                     android:layout_width="80dp"
                     android:layout_height="wrap_content"
                     android:text="Family:"/>
@@ -78,6 +79,7 @@
 
                 <TextView
                     android:id="@+id/deviceLabel"
+                    android:labelFor="@+id/deviceName"
                     android:layout_width="80dp"
                     android:layout_height="wrap_content"
                     android:text="Device:"/>
@@ -102,6 +104,7 @@
 
                 <TextView
                     android:id="@+id/serverLabel"
+                    android:labelFor="@+id/serverAddress"
                     android:layout_width="80dp"
                     android:layout_height="wrap_content"
                     android:text="Server:"/>
@@ -128,6 +131,7 @@
 
                 <TextView
                     android:id="@+id/locationLabel"
+                    android:labelFor="@+id/locationName"
                     android:layout_width="80dp"
                     android:layout_height="wrap_content"
                     android:text="Location (optional):"/>
